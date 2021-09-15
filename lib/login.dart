@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -80,6 +81,14 @@ class _LoginProcessState extends State<LoginProcess> {
               child: const Text('Logout'),
               style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all(Colors.redAccent),
+                  side: MaterialStateProperty.all(
+                      const BorderSide(color: Colors.black))),
+            ),
+            ElevatedButton(
+              onPressed: _signInWithGoogle,
+              child: const Text('Signin with Gmail'),
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.cyan),
                   side: MaterialStateProperty.all(
                       const BorderSide(color: Colors.black))),
             ),
@@ -186,6 +195,29 @@ class _LoginProcessState extends State<LoginProcess> {
           debugPrint(e.toString());
         }
       }
+    }
+  }
+
+  Future<UserCredential> _signInWithGoogle() async {
+    try {
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser!.authentication;
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Once signed in, return the UserCredential
+      return await _auth.signInWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      debugPrint('********************ERROR6****************');
+      debugPrint(e.toString());
     }
   }
 }
