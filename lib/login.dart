@@ -1,0 +1,191 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+FirebaseAuth _auth = FirebaseAuth.instance;
+
+class LoginProcess extends StatefulWidget {
+  const LoginProcess({Key? key}) : super(key: key);
+  @override
+  _LoginProcessState createState() => _LoginProcessState();
+}
+
+class _LoginProcessState extends State<LoginProcess> {
+  @override
+  void initState() {
+    super.initState();
+    _auth.authStateChanges().listen((User? user) {
+      if (user == null) {
+        debugPrint('User is currently signed out!');
+      } else {
+        debugPrint('User is signed in!');
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Login Process'),
+      ),
+      body: Center(
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: _emailPasswordCreateUser,
+              child: const Text('Email/Password User Create'),
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.green),
+                  side: MaterialStateProperty.all(
+                      const BorderSide(color: Colors.black))),
+            ),
+            ElevatedButton(
+              onPressed: _emailPasswordLoginUser,
+              child: const Text('Email/Password User Login'),
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.blueAccent),
+                  side: MaterialStateProperty.all(
+                      const BorderSide(color: Colors.black))),
+            ),
+            ElevatedButton(
+              onPressed: _emailPasswordResetPassword,
+              child: const Text('Password Reset Link',
+                  style: TextStyle(
+                    color: Colors.black,
+                  )),
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.limeAccent),
+                  side: MaterialStateProperty.all(
+                      const BorderSide(color: Colors.black))),
+            ),
+            ElevatedButton(
+              onPressed: _updatePassword,
+              child: const Text('Update Password'),
+              style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all(Colors.purpleAccent),
+                  side: MaterialStateProperty.all(
+                      const BorderSide(color: Colors.black))),
+            ),
+            ElevatedButton(
+              onPressed: _updateEmail,
+              child: const Text('Update Email'),
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.teal),
+                  side: MaterialStateProperty.all(
+                      const BorderSide(color: Colors.black))),
+            ),
+            ElevatedButton(
+              onPressed: _emailPasswordLogoutUser,
+              child: const Text('Logout'),
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.redAccent),
+                  side: MaterialStateProperty.all(
+                      const BorderSide(color: Colors.black))),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _emailPasswordCreateUser() async {
+    String _email = 'hamitseyrek@gmail.com';
+    String _password = '12345678p';
+    try {
+      UserCredential _credential = await _auth.createUserWithEmailAndPassword(
+          email: _email, password: _password);
+      var _user = _credential.user;
+      await _user!.sendEmailVerification();
+      if (_auth.currentUser != null) {
+        debugPrint('Please verify your email!');
+        await _auth.signOut();
+      } else {}
+      debugPrint(_user.toString());
+    } catch (e) {
+      debugPrint('********************ERROR1****************');
+      debugPrint(e.toString());
+    }
+  }
+
+  void _emailPasswordLoginUser() async {
+    String _email = 'hamitseyrek@gmail.com';
+    String _password = '12345678p';
+    try {
+      if (_auth.currentUser == null) {
+        var _user = (await _auth.signInWithEmailAndPassword(
+                email: _email, password: _password))
+            .user;
+        if (!_user!.emailVerified) {
+          debugPrint('Please verify emai');
+          _auth.signOut();
+        }
+      } else {
+        debugPrint('Already user login');
+      }
+    } on FirebaseAuthException catch (e) {
+      debugPrint('********************ERROR2****************');
+      debugPrint(e.toString());
+    }
+  }
+
+  void _emailPasswordLogoutUser() async {
+    if (_auth.currentUser != null) {
+      await _auth.signOut();
+    }
+  }
+
+  void _emailPasswordResetPassword() async {
+    String _email = 'hamitseyrek@gmail.com';
+    try {
+      await _auth.sendPasswordResetEmail(email: _email);
+    } catch (e) {
+      debugPrint('********************ERROR3****************');
+      debugPrint(e.toString());
+    }
+  }
+
+  void _updatePassword() async {
+    if (_auth.currentUser != null) {
+      try {
+        await _auth.currentUser!.updatePassword('12345678p');
+        debugPrint('*******UPDATED PASSWORD*******');
+      } catch (e) {
+        try {
+          String _email2 = 'hamitseyrek@gmail.com';
+          String _password = '12345678p';
+
+          AuthCredential _credential =
+              EmailAuthProvider.credential(email: _email2, password: _password);
+          await _auth.currentUser!.reauthenticateWithCredential(_credential);
+          await _auth.currentUser!.updatePassword('12345678p');
+        } catch (e) {
+          debugPrint('********************ERROR4****************');
+          debugPrint(e.toString());
+        }
+      }
+    }
+  }
+
+  void _updateEmail() async {
+    if (_auth.currentUser != null) {
+      try {
+        await _auth.currentUser!.updateEmail('hamitseyrek@gmail.com');
+        debugPrint('*******UPDATED EMAIL*******');
+      } catch (e) {
+        try {
+          String _email2 = 'hamitseyrek@gmail.com';
+          String _password = '12345678p';
+
+          AuthCredential _credential =
+              EmailAuthProvider.credential(email: _email2, password: _password);
+          await _auth.currentUser!.reauthenticateWithCredential(_credential);
+          await _auth.currentUser!.updateEmail('hamitseyrek@gmail.com');
+        } catch (e) {
+          debugPrint('********************ERROR4****************');
+          debugPrint(e.toString());
+        }
+      }
+    }
+  }
+}
