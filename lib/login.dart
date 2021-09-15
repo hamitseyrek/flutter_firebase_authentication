@@ -77,18 +77,26 @@ class _LoginProcessState extends State<LoginProcess> {
                       const BorderSide(color: Colors.black))),
             ),
             ElevatedButton(
-              onPressed: _emailPasswordLogoutUser,
-              child: const Text('Logout'),
-              style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Colors.redAccent),
-                  side: MaterialStateProperty.all(
-                      const BorderSide(color: Colors.black))),
-            ),
-            ElevatedButton(
               onPressed: _signInWithGoogle,
               child: const Text('Signin with Gmail'),
               style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all(Colors.cyan),
+                  side: MaterialStateProperty.all(
+                      const BorderSide(color: Colors.black))),
+            ),
+            ElevatedButton(
+              onPressed: _signInWithPhone,
+              child: const Text('Signin with Phone'),
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.grey),
+                  side: MaterialStateProperty.all(
+                      const BorderSide(color: Colors.black))),
+            ),
+            ElevatedButton(
+              onPressed: _emailPasswordLogoutUser,
+              child: const Text('Logout'),
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.redAccent),
                   side: MaterialStateProperty.all(
                       const BorderSide(color: Colors.black))),
             ),
@@ -218,6 +226,42 @@ class _LoginProcessState extends State<LoginProcess> {
     } on FirebaseAuthException catch (e) {
       debugPrint('********************ERROR6****************');
       debugPrint(e.toString());
+      final credential = GoogleAuthProvider.credential();
+      return await _auth.signInWithCredential(credential);
     }
+  }
+
+  void _signInWithPhone() async {
+    await _auth.verifyPhoneNumber(
+      phoneNumber: '+90 544 210 12 34',
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        // ANDROID ONLY!
+        // Sign the user in (or link) with the auto-generated credential
+        await _auth.signInWithCredential(credential);
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        if (e.code == 'invalid-phone-number') {
+          debugPrint('The provided phone number is not valid.');
+        }
+        debugPrint('********************ERROR7****************');
+        debugPrint(e.toString());
+      },
+      codeSent: (String verificationId, int? resendToken) async {
+        debugPrint('***************SEND CODE************');
+        // Update the UI - wait for the user to enter the SMS code
+        String smsCode = '123456';
+
+        // Create a PhoneAuthCredential with the code
+        PhoneAuthCredential credential = PhoneAuthProvider.credential(
+            verificationId: verificationId, smsCode: smsCode);
+
+        // Sign the user in (or link) with the credential
+        await _auth.signInWithCredential(credential);
+        debugPrint('***********SUCCESSFUL*********');
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        debugPrint('***************TIMEOUT************');
+      },
+    );
   }
 }
