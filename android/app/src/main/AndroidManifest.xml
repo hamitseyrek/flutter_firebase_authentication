@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.flutter_firebase_authentication">
+    package="com.hamitseyrek.flutter_firebase_authentication">
    <application
         android:label="flutter_firebase_authentication"
         android:icon="@mipmap/ic_launcher">
@@ -17,15 +17,6 @@
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
-              />
-            <!-- Displays an Android View that continues showing the launch screen
-                 Drawable until Flutter paints its first frame, then this splash
-                 screen fades out. A splash screen is useful to avoid any visual
-                 gap between the end of Android's launch screen and the painting of
-                 Flutter's first frame. -->
-            <meta-data
-              android:name="io.flutter.embedding.android.SplashScreenDrawable"
-              android:resource="@drawable/launch_background"
               />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
